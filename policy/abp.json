@@ -1,0 +1,145 @@
+{
+  "about": "Agent Behaviour Policy (ABP) for AgileCells__IaC. CI reads this file on every run: a pipeline may take only the actions listed for it, an agent's commits may change only the paths listed for it, and every privilege held by the GitHub App or the AWS role is listed here with its reason. Anything not listed is refused. Changes to this file, to .github/ and to build/ take effect only when Dinis merges them.",
+  "version": 1,
+  "owner": "Dinis Cruz",
+  "source": "Dinis, 19 November 2026 ~15:10 UTC in the conductor session recorded in team/keys.json: \"let's take the opportunity to add as much automation (via CI pipelines) as possible, and then use our ABP to control it\"; \"let's try to do this completely from the CI pipeline and if we need to add more privs to the GH App and the AWS Role, we'll add them\". Adopted for AgileCells__IaC as a copy of SovereignWebsite__IaC's policy: Dinis Cruz, 27 Nov 2026 ~14:40 UTC, in c.maestro's session (relayed): \"yes to the five core repos, go ahead (and document this as part of the core setup of a AgentCells GH organisation)\"; ~14:55 in factory.c's session: \"Yes attach\".",
+  "agents": {
+    "cl-3.infrastructure@AgileCells.dinis": {
+      "session": "https://claude.ai/code/session_01Kw9UwFQ86g2ZeXQ2edTAjh",
+      "may_change": [
+        ".github/**",
+        "build/**",
+        "test/**",
+        "org/**",
+        "seed/**",
+        "docs/**",
+        ".gitignore",
+        "policy/**",
+        "requests/**",
+        "README.md",
+        "REALITY.md",
+        "CLAUDE.md",
+        "team/keys.json"
+      ],
+      "needs_dinis_merge": [
+        "policy/**",
+        ".github/**",
+        "build/**",
+        "org/**",
+        "seed/**",
+        "requests/**",
+        "team/keys.json"
+      ],
+      "branches": [
+        "dev",
+        "cl-3.factory/core"
+      ],
+      "never": [
+        "push to main",
+        "print or commit a key or token",
+        "name a private prospect"
+      ],
+      "source": "The infrastructure agent of AgileCells__IaC, on Dinis's account C (also factory.c@SovereignWebsite.dinis and cl-3.factory@AgentiCCells.dinis, same key). Dinis Cruz, 27 Nov 2026 ~14:40 UTC, in c.maestro's session (relayed): \"yes to the five core repos, go ahead (and document this as part of the core setup of a AgentCells GH organisation)\"; ~14:55 in factory.c's session: \"Yes attach\".",
+      "note": "A conductor-style second agent (for example the Security agent reviewing changes, separation of duties) is added here by Dinis's merge."
+    }
+  },
+  "pipelines": {
+    "checks": {
+      "runs_on": [
+        "pull_request to dev",
+        "push to dev"
+      ],
+      "allowed": [
+        "read repository"
+      ],
+      "github_token": {
+        "contents": "read"
+      }
+    },
+    "org-apply": {
+      "runs_on": [
+        "push to dev that changes org/ or policy/",
+        "hourly schedule (converges: HTTPS once certificates are issued; every sixth hour it also nudges a domain with no certificate)",
+        "by hand"
+      ],
+      "environment": "apply",
+      "allowed": [
+        "repo.create",
+        "repo.update_settings",
+        "branch.create_dev",
+        "repo.set_default_branch",
+        "pages.enable",
+        "repo.seed",
+        "pages.set_cname",
+        "team.grant_push",
+        "repo.protect_branches",
+        "pages.enforce_https",
+        "pages.nudge_certificate",
+        "repo.rename",
+        "repo.invite_collaborator",
+        "repo.refresh_managed"
+      ],
+      "refused_always": [
+        "repo.delete",
+        "repo.transfer",
+        "repo.archive",
+        "repo.make_private",
+        "member.change",
+        "app.change",
+        "team.grant_admin",
+        "team.grant_maintain",
+        "ruleset.delete",
+        "ruleset.weaken"
+      ],
+      "note": "A repository that exists but is not in org/repos.json is reported, never deleted. repo.seed only adds files that are missing on dev, never overwrites. repo.refresh_managed replaces only the files listed in build/managed.mjs (today .github/ci/signers.mjs), and only when the site has exactly an earlier version the IaC seeded (seed/managed-history.json); a keeper's own change is kept and reported. pages.nudge_certificate re-sets the same custom domain only when Pages has no certificate or a failed one, so GitHub retries issuing it; it never runs while a certificate is pending.",
+      "protection": {
+        "main": "no deletion, no force push, no direct update; only organisation admins (Dinis) bypass, so main moves only when Dinis merges a release",
+        "dev": "no deletion, no force push; agents push here, and every push runs Checks including the policy path check"
+      },
+      "nudge_source": "Dinis, 20 Nov 2026 ~10:20 UTC in the factory.b session: \"you have to run that regularly ... until they are stable\".",
+      "rename_note": "repo.rename only from a name a request lists as aka (its old Site__<label> or Redirect__<label>) to the name the request gives, Site__[<Group>__]<Name> (Dinis, 20 Nov 2026 ~12:28 UTC). GitHub keeps redirecting the old name. One more: SovereignWebsite__Factory to SovereignWebsite__IaC, the aka in org/repos.json (Dinis, 22 Nov 2026 ~21:16 UTC in factory.c's session: \"can you create everything and then get everything ready\"; the rename is Org apply's, so the hourly run never recreates the old name).",
+      "collaborator_note": "repo.invite_collaborator: only a GitHub login a site request names under \"collaborators\", only with push (write), on that site repository only; a login GitHub does not know is reported, never invited. Never admin or maintain (Dinis, 20 Nov 2026 ~14:44 UTC: \"hi can you add kateandphilce-jpg as the writer to kate's repo\").",
+      "signers_note": "Every seed carries .github/ci/signers.mjs and .github/workflows/signers.yml: each new commit on a site's dev is checked against the agent keys live in this repository's team/keys.json (an Agent: commit), or must be a commit GitHub verified (a person's); an \"Owner override: <quote>, <where>\" line is listed, not refused. New sites run it in pages.yml before the build, so a refused commit is not deployed. Sites already made get the two files from repo.seed (missing files only, nothing overwritten): there it turns the run red and names the commit; it blocks the deploy only once the keeper adds the step to the site's own pages.yml. Sites moved in by transfer are not seeded and do not get it. Source: incident board/incidents/2026-11-22__pushed-before-key-published.md, proposal 1; Dinis, 22 Nov 2026 ~15:30 UTC in factory.d's session: \"Yes to the sign check. Yes to the org apply to the sites already there.\""
+    }
+  },
+  "privileges": [
+    {
+      "holder": "github-app:agenticcells-site-factory",
+      "permission": "metadata:read",
+      "why": "required by GitHub for any App",
+      "state": "expected"
+    },
+    {
+      "holder": "github-app:agenticcells-site-factory",
+      "permission": "administration:write",
+      "why": "org-apply: create repositories and set their settings from org/repos.json",
+      "state": "expected"
+    },
+    {
+      "holder": "github-app:agenticcells-site-factory",
+      "permission": "contents:write",
+      "why": "org-apply: create the dev branch and seed files in a new repository",
+      "state": "expected"
+    },
+    {
+      "holder": "github-app:agenticcells-site-factory",
+      "permission": "pages:write",
+      "why": "org-apply: turn on GitHub Pages for site repositories",
+      "state": "expected"
+    },
+    {
+      "holder": "github-app:agenticcells-site-factory",
+      "permission": "workflows:write",
+      "why": "org-apply: seed a new repository's CI workflows",
+      "state": "expected"
+    },
+    {
+      "holder": "github-app:agenticcells-site-factory",
+      "permission": "members:read (organisation)",
+      "why": "org-apply: give the agents' team push on each repository (team.grant_push)",
+      "state": "needed; not yet checked"
+    }
+  ],
+  "keys_rule": "Each agent publishes its own key when it starts: its first commit to this repository adds one entry to team/keys.json, its own (agent and session as the commit's Agent: and Claude-Session: trailers, status active, with bundle.sign), changes nothing else there, and is signed by that new key; build/check-signatures.mjs verifies that one commit against the key it adds, and every later commit against its parent's keys. One live key per agent name: a second session of a role takes its own name, <role>.<label>.<account>@SovereignWebsite.dinis (for example conductor.keys.d@SovereignWebsite.dinis), while there is only one <role>.<account>. An agent may retire its own entry; a conductor (an agent whose may_change lists team/keys.json) may also retire another agent's entry. No commit adds another agent's key, edits a key, name or session in place, or removes an entry; changing another agent's key is Dinis's. build/abp.mjs keysChange enforces this. Trade-off, accepted by Dinis: anyone with push on dev can publish a key under an unused name, so the trust rests on the team's GitHub write access and the session trailer.",
+  "keys_rule_source": "Copied from SovereignWebsite__IaC (Dinis, 22 Nov 2026). Dinis, 22 Nov 2026 ~01:31 UTC in conductor.d's session (relayed by conductor.d): \"it is the agents (when they start) that need to push their key to that location on the repo\"; \"we can only have one conductor.d@SovereignWebsite.dinis (you) but we can have many conductor.*@SovereignWebsite.dinis sessions\". In factory.d's session, ~03:25 UTC: \"yes to building the self published rule and yes to the second session of a role\". Replaces the rule \"No agent may change its own entry in team/keys.json ... The conductor adds and retires its team's keys; only Dinis changes the conductor's key.\""
+}

@@ -1,0 +1,67 @@
+{
+  "about": "The AgileCells organisation's repositories, as code. org-apply creates any that are missing and keeps their settings as written here. It never deletes, transfers, archives or makes private (policy/abp.json). A repository with a seed is seeded with the files of its seed/ folder (only missing files are added). Every repository gives the teams in defaults.teams their permission (push, never admin).",
+  "org": "AgileCells",
+  "defaults": {
+    "visibility": "public",
+    "default_branch": "dev",
+    "has_wiki": false,
+    "has_projects": false,
+    "delete_branch_on_merge": true,
+    "allow_merge_commit": true,
+    "allow_squash_merge": false,
+    "allow_rebase_merge": false,
+    "teams": {
+      "agilecells-agentic-team": "push"
+    },
+    "protect": true
+  },
+  "repos": [
+    {
+      "name": "AgileCells__IaC",
+      "aka": [
+        "AgileCells-AgileCells__IaC"
+      ],
+      "renamed_by": "Created by Dinis as AgileCells-AgileCells__IaC on 27 Nov 2026; Org apply renames it from this aka (as SovereignWebsite__Factory became SovereignWebsite__IaC).",
+      "description": "Control repository: the AgileCells organisation as code. Driven by CI under an Agent Behaviour Policy.",
+      "exists_by": "Dinis, 27 Nov 2026",
+      "pages": false
+    },
+    {
+      "name": "AgileCells__Agent__Infrastructure",
+      "description": "The infrastructure agents' home: keepers of AgileCells__IaC. Their keys and areas, one per owner and account.",
+      "pages": false,
+      "seed": "seed/home-template",
+      "made_by": "Dinis Cruz, 27 Nov 2026 ~14:40 UTC, in c.maestro's session (relayed): \"yes to the five core repos, go ahead (and document this as part of the core setup of a AgentCells GH organisation)\"."
+    },
+    {
+      "name": "AgileCells__Agent__ABP",
+      "description": "The Agent Behaviour Policy agents' home: the policies every AgileCells agent works under.",
+      "pages": false,
+      "seed": "seed/home-template",
+      "made_by": "Dinis Cruz, 27 Nov 2026 ~14:40 UTC, in c.maestro's session (relayed): \"yes to the five core repos, go ahead (and document this as part of the core setup of a AgentCells GH organisation)\"."
+    },
+    {
+      "name": "AgileCells__Agent__Maestro",
+      "description": "The maestro agents' home: routing Dinis's words to the AgileCells agents.",
+      "pages": false,
+      "seed": "seed/home-template",
+      "made_by": "Dinis Cruz, 27 Nov 2026 ~14:40 UTC, in c.maestro's session (relayed): \"yes to the five core repos, go ahead (and document this as part of the core setup of a AgentCells GH organisation)\"."
+    },
+    {
+      "name": "AgileCells__Agent__Security",
+      "description": "The security agents' home: they review changes to AgileCells__IaC and the ABP (separation of duties).",
+      "pages": false,
+      "seed": "seed/home-template",
+      "made_by": "Dinis Cruz, 27 Nov 2026 ~14:40 UTC, in c.maestro's session (relayed): \"yes to the five core repos, go ahead (and document this as part of the core setup of a AgentCells GH organisation)\"."
+    },
+    {
+      "name": "AgileCells__Site__Website",
+      "description": "agilecells.org: Agile Cells, many types of cells of people and agents working together in an agile way.",
+      "homepage": "https://agilecells.org",
+      "pages": true,
+      "cname": "agilecells.org",
+      "seed": "seed/AgileCells__Site__Website",
+      "made_by": "Dinis Cruz, 27 Nov 2026 ~14:40 UTC, in c.maestro's session (relayed): \"yes to the five core repos, go ahead (and document this as part of the core setup of a AgentCells GH organisation)\"."
+    }
+  ]
+}
